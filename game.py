@@ -1,5 +1,5 @@
 	
-class Player
+class Player:
 	def __init__ (self, chat_id, index, name):
 		self.chat_id = chat_id
 		self.index = index
