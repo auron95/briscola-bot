@@ -1,6 +1,7 @@
 from game import GameUpdateMessage, Player
 from models import Event
 import random
+from errors import *
 
 class SeedEvent(Event):
 
