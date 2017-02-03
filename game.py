@@ -26,11 +26,11 @@ class Player:
 	def play(self,card):
 		index = self.card_index(card)
 		if index==None:
-			raise CardNotFound(self.player + " tried to play " + self.card + " but that was not in his hand.")
+			raise CardNotFound(str(self.player) + " tried to play " + str(self.card) + " but that he had " + str(self.hand) + " in his hand.")
 		else:
 			self.game.table.append((self, self.hand.pop(index)))
 			assert(self.card_index(card)==None)
-	
+			
 class Field:
 	def __init__(self):
 		self.plays = []
@@ -73,6 +73,7 @@ class Card:
 		self.number = name[:1]
 		if self.number not in self.NUMBERS:
 			raise NotAValidCard(self.number + " is not a valid number.")
+	
 
 	def value(self):
 		assert(self.number in self.NUMBERS)
@@ -117,12 +118,12 @@ class Deck:
 	
 
 class GameUpdateMessage:
-	def __init__(self, player_id, message, options):
-		self.player_id = player_id
+	def __init__(self, player, message, options):
+		self.player = player
 		self.message = message
 		self.options = options
 		
 	def __repr__(self):
-		return "P" + str(self.player_id) + " << " +  self.message + "\n" + str(self.options)
+		return "P" + str(self.player) + " << " +  self.message + "\n" + str(self.options)
 		
 

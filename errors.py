@@ -3,3 +3,6 @@ class NotAValidCard(ValueError):
 	
 class CardNotFound(Exception):
 	pass
+	
+class UnexpectedEvent(Exception):
+	pass
