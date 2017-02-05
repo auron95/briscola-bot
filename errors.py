@@ -6,3 +6,6 @@ class CardNotFound(Exception):
 	
 class UnexpectedEvent(Exception):
 	pass
+	
+class IllegalMove(Exception):
+	pass

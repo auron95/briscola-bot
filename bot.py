@@ -8,7 +8,7 @@ import sys
 import json
 # Aggiunge il pacchetto python-telegram-bot installato in locale
 import telegram
-import game
+import game_utils
 
 def handle_update (update, bot):
 	chat_id = update.message.chat.id
