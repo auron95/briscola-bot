@@ -7,9 +7,9 @@ class Player:
 		self.last_message = None
 		self.game = game
 		self.hand = CardCollection()
-		self.current_points = 0
+		self.collected_points = 0
 		self.overall_points = 0
-		self.collected_cards = []
+		self.collected_cards = CardCollection()
 	
 	def __repr__(self):
 		return str(self.name) + "(Giocatore " + str(self.index) + ")"
@@ -41,12 +41,15 @@ class Field:
 			return None
 		else:
 			return self.plays[0][1].suit
+			
+	def clear(self):
+		self.__init__()
 
-	def get_taking_play(self):
-		return max(self.plays, lambda p: p[1].taking_power())
+	def get_taking_play(self, trump = None):
+		return max(self.plays, key=lambda p: p[1].taking_power(self.plays[0][1].suit, trump))
 		
 	def points_on_the_field(self):
-		return sum(map(lambda card: card.value,self.cards()))
+		return self.cards().value()
 		
 	def cards(self):
 		return CardCollection([ card for p, card in self.plays ])
@@ -73,6 +76,7 @@ class Card:
 	
 	VALUES = {
 		"A": 11,
+		"3": 10,
 		"K": 4,
 		"Q": 3,
 		"J": 2
@@ -105,6 +109,8 @@ class Card:
 		
 		if self.suit == trump_suit:
 			power = power + 20
+			
+		return power
 	
 	def __str__(self):
 		return self.number + self.suit
@@ -130,14 +136,17 @@ class CardCollection:
 		random.shuffle(self.cards)
 	
 	def draw(self, num = 1):
-		if len(self.cards) < num:
-			raise CardNotFound("Tried to draw " + str(num) + " cards, but deck had only " + len(self.cards) + ".")
+		if self.size() < num:
+			raise CardNotFound("Tried to draw " + str(num) + " cards, but deck had only " + str(len(self.cards)) + ".")
 		drawn = self.cards[:num]
 		del self.cards[:num]
 		return CardCollection(drawn)
 		
 	def size(self):
 		return len(self.cards)
+	
+	def value(self):
+		return sum(map(lambda card: card.value(),self.cards))
 		
 	def __str__(self):
 		return " ".join(str(card) for card in self.cards)

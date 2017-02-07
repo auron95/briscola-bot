@@ -30,16 +30,11 @@ class PlayCardEvent(Event):
 
 class TakeTrickEvent(Event):
 	def resolve(self, game):
-		player = game.field.get_taking_play()[0]
-		player.current_points += game.field.points_on_the_field()
-		player.collected_card.append(game.fields.cards())
-		assert(sum(map(lambda card: card.value(), player.collected_cards))==player.current_points)
-		
-		if game.DRAW_AFTER_TRICK:
-			for pl in game.players:
-				drawn = player.draw(game.deck)
-		game.player_to_play = player
-		
+		player = game.field.get_taking_play(game.trump_suit)[0]
+		player.collected_points += game.field.points_on_the_field()
+		player.collected_cards.cards += game.field.cards().cards
+		game.field.clear()
+		game.player_to_play=player
 		return TrickTakenMessage(player, name=player.name, cards = game.field.cards())
 		
 	def __repr__(self):
@@ -72,7 +67,7 @@ class SetTrumpEvent(Event):
 		game.trump_suit = last_card.suit
 		return TrumpRevealedMessage(card=last_card)
 	
-	
+class GameOverEvent
 
 	
 	

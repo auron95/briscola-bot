@@ -12,6 +12,8 @@ class Briscola4Game(Game):
 	MUST_RESPOND_TO_SUIT = False
 	HEARTS_MUST_BE_BROKEN = False
 	
+	
+	
 	def send_input(self, value):
 		if not hasattr(self,'random'):
 			return self._inject_event(SeedEvent(int(value)))
@@ -31,7 +33,7 @@ class Briscola4Game(Game):
 			if self.field.cards().size() == self.NUMBER_OF_PLAYERS:
 				return self._inject_event(TakeTrickEvent())
 		
-			if self.player_to_play.hand.size() < 3 and self.deck.size > 0:
+			if self.player_to_play.hand.size() < 3 and self.deck.size() > 0:
 				return self._inject_event(DrawCardEvent(3-self.player_to_play.hand.size()))
 				
 		return []

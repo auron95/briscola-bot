@@ -38,6 +38,8 @@ class Event(Base):
 		else:
 			return [self.updates.ita(player) for player in players].filter(lambda x:x is not None)
 	
+	def __repr__(self):
+		return self.__class__.__name__ + str(self.value)
 
 class Game(Base):
 	__tablename__ = 'games'
@@ -60,7 +62,7 @@ class Game(Base):
 	}
 	
 	
-	def __init__ (self, id):
+	def __init__ (self, id, debug=False):
 		self.id = id
 		self.players = []
 		self.deck = []
@@ -70,8 +72,11 @@ class Game(Base):
 		self.deck = []
 		self.running = False
 		self.trump_suit = None
+		self.debug = debug
 	
 	def _inject_event(self, event):
+		if self.debug:
+			print event
 		response = [event.resolve(self)]
 		assert(response is not None)
 		response += self.trigger_automatic()
