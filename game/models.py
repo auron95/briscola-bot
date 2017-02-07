@@ -2,7 +2,7 @@ import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, create_engine
 
-from game_utils import Field
+from utils import Field
 from errors import IllegalMove
 Base = declarative_base()
 
@@ -20,7 +20,7 @@ class Event(Base):
 
 	def __init__(self, value=None):
 		self.value = value
-		self.update_messages = []
+		self.update = []
 	
 	def resolve(self, game):
 		raise NotImplementedError("Event has no resolve method") 
@@ -31,7 +31,13 @@ class Event(Base):
 	def send_update(self, game, update):
 		self.update_messages.append(update)
 		update.player.last_message = update
-
+		
+	def get_updates(players):
+		if self.updates is None:
+			return []
+		else:
+			return [self.updates.ita(player) for player in players].filter(lambda x:x is not None)
+	
 
 class Game(Base):
 	__tablename__ = 'games'
@@ -65,15 +71,11 @@ class Game(Base):
 		self.running = False
 		self.trump_suit = None
 	
-	def inject_event(self, event, dispatcher = None):
-		try:
-			event.resolve(self)
-			if dispatcher:
-				dispatcher.dispatch(event.update_messages)
-			self.trigger_automatic(dispatcher)
-		except IllegalMove:
-			self.trigger_automatic(dispatcher)
-		return 
+	def _inject_event(self, event):
+		response = [event.resolve(self)]
+		assert(response is not None)
+		response += self.trigger_automatic()
+		return filter(lambda x: x is not None, response)
 		
 	def _update(self):
 		while len(self.events) > 0:
@@ -81,8 +83,11 @@ class Game(Base):
 			event.resolve(self)
 			
 		
-	def trigger_automatic(self, dispatcher):
+	def _trigger_automatic(self):
 		raise NotImplementedError("Game has no trigger_automatic method") 
+
+	def send_input(self, value):
+		raise NotImplementedError("Game has no send_input method") 
 		
 		
 		

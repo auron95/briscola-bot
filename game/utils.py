@@ -1,13 +1,12 @@
 from errors import *
 
 class Player:
-	def __init__ (self, game, index, name = None, chat_id= None):
-		self.chat_id = chat_id
+	def __init__ (self, game, index, name = None):
 		self.index = index
 		self.name = name or "Player " + str(index)
 		self.last_message = None
 		self.game = game
-		self.hand = []
+		self.hand = CardCollection()
 		self.current_points = 0
 		self.overall_points = 0
 		self.collected_cards = []
@@ -21,25 +20,17 @@ class Player:
 		
 	def draw(self, deck, num=1):
 		drawn = deck.draw(num)
-		self.hand += drawn
+		self.hand.cards += drawn.cards
 		return drawn
 	
-	def card_index(self,card):
-		# Check if player has a card, and return that if found
-		matches = [i for i, c in enumerate(self.hand) if str(c) == str(card)]
-		assert(len(matches)<=1)
-		if len(matches) == 0:
-			return None
-		else:
-			return matches[0]
 	
 	def play(self,card):
-		index = self.card_index(card)
+		index = self.hand.card_index(card)
 		if index==None:
 			raise IllegalMove(str(self) + " tried to play " + str(card) + " but that he had " + str(self.hand) + " in his hand.")
 		else:
-			self.game.field.plays.append((self, self.hand.pop(index)))
-			assert(self.card_index(card)==None)
+			self.game.field.plays.append((self, self.hand.cards.pop(index)))
+			assert(self.hand.card_index(card)==None)
 			
 class Field:
 	def __init__(self):
@@ -58,7 +49,7 @@ class Field:
 		return sum(map(lambda card: card.value,self.cards()))
 		
 	def cards(self):
-		return [ card for p, card in self.plays ]
+		return CardCollection([ card for p, card in self.plays ])
 		
 	def to_string(expected_player = None):
 		return ' '.join(str(card) for card in self.cards())
@@ -118,16 +109,23 @@ class Card:
 	def __str__(self):
 		return self.number + self.suit
 		
-class Deck:
-	def __init__(self, Card):
-		self.cards = []
-		for suit in Card.SUITS:
-			for number in Card.NUMBERS:
-				self.cards.append(Card(number+suit))
+class CardCollection:
+	
+	def __init__(self, cards = None):
+		self.cards = cards or []
 			
 	def reset(self):
 		__init__(self)
 		
+	def card_index(self,card):
+		# Check if player has a card, and return that if found
+		matches = [i for i, c in enumerate(self.cards) if str(c) == str(card)]
+		assert(len(matches)<=1)
+		if len(matches) == 0:
+			return None
+		else:
+			return matches[0]
+
 	def shuffle(self,random):
 		random.shuffle(self.cards)
 	
@@ -136,22 +134,36 @@ class Deck:
 			raise CardNotFound("Tried to draw " + str(num) + " cards, but deck had only " + len(self.cards) + ".")
 		drawn = self.cards[:num]
 		del self.cards[:num]
-		return drawn
+		return CardCollection(drawn)
 		
 	def size(self):
 		return len(self.cards)
 		
+	def __str__(self):
+		return " ".join(str(card) for card in self.cards)
+		
 	def __repr__(self):
 		return "Deck: << " + " ".join(str(card) for card in self.cards)
-	
 
-class GameUpdateMessage:
-	def __init__(self, player, message, options):
-		self.player = player
-		self.message = message
-		self.options = options
+class Deck(CardCollection):
+	def __init__(self, Card):
+		self.cards = []
+		for suit in Card.SUITS:
+			for number in Card.NUMBERS:
+				self.cards.append(Card(number+suit))
+	
+class Dispatcher:
+	def __init__(self, game):
+		self.game = game
 		
-	def __repr__(self):
-		return str(self.player) + " << " +  self.message + "\n" + str([str(opt) for opt in self.options])
+	def dispatch_game_updates(self, updates):
+		for update in updates:
+			for player in self.game.players:
+				self.output(player, update.ita(player), update.options(player)) 
 		
+	def output(self, player, message, options):
+		raise NotImplementedError('Output not implemented')
+
+	def input(self, input_msg):
+		raise NotImplementedError('Input not implemented')
 
