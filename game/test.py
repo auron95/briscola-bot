@@ -2,7 +2,7 @@ import unittest
 from games import *
 from events import *
 from utils import Card, Dispatcher
-
+from database import Session
 class DebugDispatcher(Dispatcher):
 	def output(self, player, message, options):
 		if message:
@@ -10,10 +10,28 @@ class DebugDispatcher(Dispatcher):
 	
 	def input(self, input_message):
 		self.dispatch_game_updates(self.game.send_input(input_message))
+		
+class TestDatabase(unittest.TestCase):
+	def test_load_from_database(self):
+		game = Briscola4Game('debug',Session())
+		disp = DebugDispatcher(game)
+		self.assertEqual(game.running, False)
+		print 'ok'
+		disp.input('1') #Seed
+		disp.input('Alberto')
+		disp.input('Barbara')
+		disp.input('Carlo')
+		disp.input('Diana')
+		
+		session = Session()
+		game2 = session.query(Game).filter_by(name='debug').first()
+		disp.input('7C')
+	
+	
 
 class TestGameDynamics(unittest.TestCase):
 	
-	def test_game_starts_successfully(self):
+	def game_starts_successfully(self):
 		game = Briscola4Game(1)
 		disp = DebugDispatcher(game)
 		self.assertEqual(game.running, False)
@@ -27,7 +45,7 @@ class TestGameDynamics(unittest.TestCase):
 		self.assertEqual(game.players[2].hand.size(),3)
 		self.assertEqual(game.deck.size(),28)
 	
-	def test_briscola_4(self):
+	def briscola_4(self):
 		game = Briscola4Game(1)
 		disp = DebugDispatcher(game)
 		disp.input('1') #Seed

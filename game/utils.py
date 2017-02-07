@@ -113,7 +113,11 @@ class Card:
 		return power
 	
 	def __str__(self):
-		return self.number + self.suit
+		try:
+			return str(self.number) + self.suit
+		except UnicodeDecodeError:
+			print self.number + self.suit
+			raise
 		
 class CardCollection:
 	

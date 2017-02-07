@@ -1,6 +1,7 @@
 import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy import Column, Integer, String, ForeignKey, create_engine
+from sqlalchemy.orm import relationship
 
 from utils import Field
 from errors import IllegalMove
@@ -11,6 +12,7 @@ class Event(Base):
 
 	id = Column(Integer, primary_key=True)
 	value = Column(String)
+	game = Column(Integer, ForeignKey("games.id"))
 	
 	type = Column(String(30))
 	__mapper_args__ = {
@@ -52,7 +54,9 @@ class Game(Base):
 	
 	
 	Card = None
-	name = Column(String, primary_key=True)
+	id = Column(Integer, primary_key=True)
+	name = Column(String, unique = True)
+	events = relationship('Event')
 	
 	type = Column(String(30))
 	
@@ -62,21 +66,35 @@ class Game(Base):
 	}
 	
 	
-	def __init__ (self, id, debug=False):
-		self.id = id
+	def __init__ (self, name, session = None, debug=False):
+		self.name = str(name)
 		self.players = []
 		self.deck = []
 		self.player_to_play = None
-		self.events = []
 		self.field = Field()
 		self.deck = []
 		self.running = False
 		self.trump_suit = None
 		self.debug = debug
+		self.session = session
+		if session:
+			session.add(self)
+			session.commit()
+			self._receive_events_from_db(session)
+		
+	
+	def _receive_events_from_db(self,session):
+		session.query(Event).filter
+		for event in self.events:
+			event.resolve()
 	
 	def _inject_event(self, event):
+		event.game = self.id
 		if self.debug:
 			print event
+		if self.session:
+			self.session.add(event)
+			self.session.commit()
 		response = [event.resolve(self)]
 		assert(response is not None)
 		response += self.trigger_automatic()
@@ -91,7 +109,7 @@ class Game(Base):
 	def _trigger_automatic(self):
 		raise NotImplementedError("Game has no trigger_automatic method") 
 
-	def send_input(self, value):
+	def send_input(self, value, session=None):
 		raise NotImplementedError("Game has no send_input method") 
 		
 		

@@ -11,8 +11,16 @@ class SeedEvent(Event):
 		random.seed(int(self.value))
 		game.random = random
 
+	__mapper_args__ = {
+		'polymorphic_identity':'seed_event'
+	}
+
 class PlayCardEvent(Event):
 	
+	__mapper_args__ = {
+		'polymorphic_identity':'play_card_event'
+	}
+
 	def resolve(self, game):
 		player = game.player_to_play
 		if player is None:
@@ -29,6 +37,11 @@ class PlayCardEvent(Event):
 		return 'A player plays ' + str(self.value)
 
 class TakeTrickEvent(Event):
+
+	__mapper_args__ = {
+		'polymorphic_identity':'take_trick_event'
+	}
+
 	def resolve(self, game):
 		player = game.field.get_taking_play(game.trump_suit)[0]
 		player.collected_points += game.field.points_on_the_field()
@@ -41,6 +54,11 @@ class TakeTrickEvent(Event):
 		return "End of the trick."
 
 class DrawCardEvent(Event):
+
+	__mapper_args__ = {
+		'polymorphic_identity':'draw_card_event'
+	}
+
 	def resolve(self,game):
 		player = game.player_to_play 
 		drawn = player.draw(game.deck, int(self.value))
@@ -48,6 +66,11 @@ class DrawCardEvent(Event):
 		return CardDrawnMessage(player, cards = drawn)
 		
 class InitializeEvent(Event):
+
+	__mapper_args__ = {
+		'polymorphic_identity':'initialize_game_event'
+	}
+
 	def resolve(self, game):
 		game.deck = Deck(game.Card)
 		assert(game.deck.size() == 40)
@@ -57,17 +80,26 @@ class InitializeEvent(Event):
 		return StartedGameMessage(name = game.player_to_play.name)
 			
 class PlayerJoinsEvent(Event):
+	
+	__mapper_args__ = {
+		'polymorphic_identity':'player_joins_event'
+	}
+
 	def resolve(self,game):
 		game.players.append(Player(game,len(game.players),self.value))
 		return PlayerJoinedMessage(game.players[-1], name=game.players[-1].name)
 
 class SetTrumpEvent(Event):
+
+	__mapper_args__ = {
+		'polymorphic_identity':'set_trump_event'
+	}
+
 	def resolve(self, game):
 		last_card = game.deck.cards[-1]
 		game.trump_suit = last_card.suit
 		return TrumpRevealedMessage(card=last_card)
 	
-class GameOverEvent
 
 	
 	
