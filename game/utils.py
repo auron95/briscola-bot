@@ -171,10 +171,9 @@ class Dispatcher:
 		
 	def dispatch_game_updates(self, updates):
 		for update in updates:
-			for player in self.game.players:
-				self.output(player, update.ita(player), update.options(player)) 
+			self.output(update) 
 		
-	def output(self, player, message, options):
+	def output(self, update, player_id):
 		raise NotImplementedError('Output not implemented')
 
 	def input(self, input_msg):

@@ -20,7 +20,10 @@ class Briscola4Game(Game):
 		if len(self.players) < self.NUMBER_OF_PLAYERS:
 			return self._inject_event(PlayerJoinsEvent(value))
 		
-		return self._inject_event(PlayCardEvent(value))
+		if self.player_to_play.hand.card_index(self.Card(value)) is not None:
+			return self._inject_event(PlayCardEvent(value))
+		else:
+			return [IllegalMoveMessage(self.player_to_play)]
 
 	def trigger_automatic(self):
 		if not self.running:

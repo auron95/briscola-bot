@@ -41,7 +41,7 @@ class TakeTrickEvent(Event):
 	__mapper_args__ = {
 		'polymorphic_identity':'take_trick_event'
 	}
-
+	
 	def resolve(self, game):
 		player = game.field.get_taking_play(game.trump_suit)[0]
 		player.collected_points += game.field.points_on_the_field()

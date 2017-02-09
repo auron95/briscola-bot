@@ -4,20 +4,20 @@ class EventMessage:
 	BROADCASTED_MESSAGE = None
 	PERSONAL_MESSAGE = None
 	
-	def __init__(self, player=None, **kwargs):
-		self.player = player #Player who receives the message
+	def __init__(self, player_id=None, **kwargs):
+		self.player_id = player_id #Player who receives the message
 		self.kwargs = kwargs
 		
-	def ita(self,player=None):
-		assert (player or 'PERSONAL_MESSAGE' in self.ita_string)
-		if player != self.player:
+	def ita(self,player_id=None):
+		assert (player_id is not None or 'PERSONAL_MESSAGE' in self.ita_string)
+		if player_id != self.player_id:
 			if 'BROADCASTED_MESSAGE' in self.ita_string:
 				return self.ita_string['BROADCASTED_MESSAGE'].format(**self.kwargs)
 		else:
 			return self.ita_string['PERSONAL_MESSAGE'].format(**self.kwargs)
 		
-	def options(self, player):
-		if 'options' in self.kwargs and player == self.player: 
+	def options(self, player_id):
+		if 'options' in self.kwargs and player_id == self.player.index: 
 			return self.kwargs['options']
 			
 		

@@ -4,9 +4,10 @@ from events import *
 from utils import Card, Dispatcher
 from database import Session
 class DebugDispatcher(Dispatcher):
-	def output(self, player, message, options):
-		if message:
-			print '\t'*player.index + str(message)
+	def output(self, update):
+		for i in range(5):
+			if update.ita(i):
+				print '\t'*i + str(update.ita(i))
 	
 	def input(self, input_message):
 		self.dispatch_game_updates(self.game.send_input(input_message))
@@ -23,15 +24,19 @@ class TestDatabase(unittest.TestCase):
 		disp.input('Carlo')
 		disp.input('Diana')
 		
+		game.save()
+		
 		session = Session()
 		game2 = session.query(Game).filter_by(name='debug').first()
-		disp.input('7C')
+		game2.initialize_default_properties(session)
+		disp2 = DebugDispatcher(game2)
+		disp2.input('7C')
 	
 	
 
 class TestGameDynamics(unittest.TestCase):
 	
-	def game_starts_successfully(self):
+	def test_game_starts_successfully(self):
 		game = Briscola4Game(1)
 		disp = DebugDispatcher(game)
 		self.assertEqual(game.running, False)
@@ -45,7 +50,7 @@ class TestGameDynamics(unittest.TestCase):
 		self.assertEqual(game.players[2].hand.size(),3)
 		self.assertEqual(game.deck.size(),28)
 	
-	def briscola_4(self):
+	def test_briscola_4(self):
 		game = Briscola4Game(1)
 		disp = DebugDispatcher(game)
 		disp.input('1') #Seed
@@ -58,6 +63,7 @@ class TestGameDynamics(unittest.TestCase):
 		disp.input('6D')
 		disp.input('QS')
 		disp.input('3C')
+		
 		self.assertEqual(game.field.cards().size(),0)
 		self.assertEqual(game.player_to_play, game.players[3])
 		self.assertEqual(game.players[3].collected_points, 13)

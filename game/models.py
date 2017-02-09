@@ -68,6 +68,13 @@ class Game(Base):
 	
 	def __init__ (self, name, session = None, debug=False):
 		self.name = str(name)
+		if session:
+			session.add(self)
+			print 'COMMIT'
+			session.commit()
+		self.initialize_default_properties(session)
+		
+	def initialize_default_properties(self, session=None):
 		self.players = []
 		self.deck = []
 		self.player_to_play = None
@@ -75,26 +82,19 @@ class Game(Base):
 		self.deck = []
 		self.running = False
 		self.trump_suit = None
-		self.debug = debug
 		self.session = session
 		if session:
-			session.add(self)
-			session.commit()
 			self._receive_events_from_db(session)
-		
 	
 	def _receive_events_from_db(self,session):
-		session.query(Event).filter
 		for event in self.events:
-			event.resolve()
+			event.resolve(self)
 	
 	def _inject_event(self, event):
 		event.game = self.id
-		if self.debug:
-			print event
+		print event
 		if self.session:
 			self.session.add(event)
-			self.session.commit()
 		response = [event.resolve(self)]
 		assert(response is not None)
 		response += self.trigger_automatic()
@@ -111,6 +111,8 @@ class Game(Base):
 
 	def send_input(self, value, session=None):
 		raise NotImplementedError("Game has no send_input method") 
-		
+	
+	def save(self):
+		self.session.commit()	
 		
 		
